@@ -3,6 +3,10 @@ const Book = require("../models/book");
 const Author = require("../models/author");
 const _ = require("lodash");
 
+const ValidationError = require("../utils/validation-error");
+
+const { GraphQLError } = graphql;
+
 const {
   GraphQLObjectType,
   GraphQLString,
@@ -44,8 +48,19 @@ const RootQuery = new GraphQLObjectType({
   fields: {
     book: {
       type: BookType,
-      args: { id: { type: GraphQLID } },
-      resolve: (parent, args) => Book.findById(args.id)
+      args: { id: { type: new GraphQLNonNull(GraphQLID) } },
+      resolve: (parent, args, context, info) => {
+        if (args.id === "1") {
+          throw new ValidationError([
+            {
+              message: "The id should not be one",
+              key: "id"
+            }
+          ]);
+        }
+
+        Book.findById(args.id);
+      }
     },
     author: {
       type: AuthorType,
@@ -54,7 +69,24 @@ const RootQuery = new GraphQLObjectType({
     },
     books: {
       type: new GraphQLList(BookType),
-      resolve: (parent, args) => Book.find({})
+      resolve: () => Book.find({})
+    },
+    booksWithAuth: {
+      type: new GraphQLList(BookType),
+      resolve: (parent, args, context, info) => {
+        if (
+          typeof context.headers.authorization === "undefined" ||
+          context.headers.authorization !== "token"
+        ) {
+          throw new ValidationError([
+            {
+              message: "Unauthorized",
+              key: "authorization"
+            }
+          ]);
+        }
+        return Book.find({});
+      }
     },
     authors: {
       type: new GraphQLList(AuthorType),

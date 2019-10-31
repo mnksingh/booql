@@ -28,10 +28,16 @@ mongoose.connection.once("open", () => {
 // bind express with graphql
 app.use(
   "/graphql",
-  graphqlHTTP({
+  graphqlHTTP(() => ({
     schema,
-    graphiql: true
-  })
+    graphiql: true,
+    customFormatErrorFn: error => ({
+      message: error.message,
+      state: error.originalError && error.originalError.state,
+      locations: error.locations,
+      path: error.path
+    })
+  }))
 );
 
 app.listen(PORT, () =>
