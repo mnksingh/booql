@@ -1,4 +1,3 @@
-# graphql-playlist
-All course files for the GraphQL tutorial playlist on The Net Ninja YouTube channel.
+Refer Below tutorial for detailer explanation
 
-Node modules are not included in the course files. After download, run npm install to install the modules (client and server folders)
+https://www.youtube.com/watch?v=ed8SzALpx1Q&t=6744s
